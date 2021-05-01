@@ -28,15 +28,18 @@ public class GeneratorServiceImpl implements GeneratorService {
 
 		//添加域
 		for (int i = 0; i < field.size(); i++) {
-			output.write("\tprivate String "+field.get(i)+";\n");
+			String name = field.get(i).substring(0, field.get(i).indexOf(';'));
+			String type = field.get(i).substring(field.get(i).indexOf(';')+1);
+			output.write("\tprivate "+ firstLetterUppercase(type) +" "+ name +";\n");
 		}
 		output.write("\n");
 		//增加getter和setter
 		for (int i = 0; i < field.size(); i++) {
-			String z = field.get(i);
-			output.write("\tpublic String get"+firstLetterUppercase(z)+"() {return this."+z+";}\n");
+			String name = field.get(i).substring(0, field.get(i).indexOf(';'));
+			String type = field.get(i).substring(field.get(i).indexOf(';')+1);
+			output.write("\tpublic "+ firstLetterUppercase(type) +" get"+firstLetterUppercase(name)+"() {return this."+name+";}\n");
 
-			output.write("\tpublic void set"+firstLetterUppercase(z)+"(String "+z+") {this."+z+"="+z+";}\n");
+			output.write("\tpublic void set"+firstLetterUppercase(name)+"("+firstLetterUppercase(type)+" "+name+") {this."+name+"="+name+";}\n");
 
 		}
 		output.write("\n}");
@@ -57,27 +60,27 @@ public class GeneratorServiceImpl implements GeneratorService {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\t@Insert(\"INSERT INTO "+tableName+"(");
 		for (int i = 0; i < field.size(); i++) {
-			String s = field.get(i);
+			String s = field.get(i).substring(0, field.get(i).indexOf(';'));
 			if (s.contains("id")) continue;
 			sb.append(s);
 			if (i < field.size()-1) sb.append(", ");
 		}
 		sb.append(") VALUES(");
 		for (int i = 0; i < field.size(); i++) {
-			String s = field.get(i);
+			String s = field.get(i).substring(0, field.get(i).indexOf(';'));
 			if (s.equals("t_id")) continue;
 			sb.append("#{"+s+"}");
 			if (i < field.size()-1) sb.append(", ");
 		}
 		sb.append(")\")\n");
-		sb.append("\t@Options(useGeneratedKeys = true, keyProperty = \""+field.get(0)+"\")\n");
+		sb.append("\t@Options(useGeneratedKeys = true, keyProperty = \""+field.get(0).substring(0, field.get(0).indexOf(';'))+"\")\n");
 		output.write(sb.toString());
 		output.write("\tvoid insert("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
 				+");\n\n");
 
 		//删
-		output.write("\t@Delete(\"DELETE FROM "+tableName+" WHERE "+field.get(0)+"=#{"+field.get(0)+"}\")\n");
+		output.write("\t@Delete(\"DELETE FROM "+tableName+" WHERE "+field.get(0).substring(0, field.get(0).indexOf(';'))+"=#{"+field.get(0).substring(0, field.get(0).indexOf(';'))+"}\")\n");
 		output.write("\tvoid delete("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
 				+");\n\n");
@@ -85,7 +88,7 @@ public class GeneratorServiceImpl implements GeneratorService {
 		StringBuilder sb1 = new StringBuilder();
 		sb1.append("\t@Update(\"UPDATE "+tableName+" SET ");
 		for (int i = 0; i < field.size(); i++) {
-			String s = field.get(i);
+			String s = field.get(i).substring(0, field.get(i).indexOf(';'));
 			if (s.equals("t_id")) continue;
 			sb1.append(s+"=#{"+s+"}");
 			if (i < field.size() - 1) sb1.append(", ");
@@ -97,7 +100,7 @@ public class GeneratorServiceImpl implements GeneratorService {
 				+");\n\n");
 
 		//查
-		output.write("\t@Select(\"SELECT * FROM "+tableName+" WHERE "+field.get(0)+"=#{"+field.get(0)+"}\")\n");
+		output.write("\t@Select(\"SELECT * FROM "+tableName+" WHERE "+field.get(0).substring(0, field.get(0).indexOf(';'))+"=#{"+field.get(0).substring(0, field.get(0).indexOf(';'))+"}\")\n");
 		output.write("\t"+firstLetterUppercase(entityName)+
 				" find"+firstLetterUppercase(entityName)+"ById"+"("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)

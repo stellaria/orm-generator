@@ -32,7 +32,7 @@ public interface GeneratorService {
 	 * @param tableName
 	 * @param packageName
 	 * @param field key为实体类属性名，value为属性类型
-	 * @param refer 关联属性
+	 * @param refer 关联属性 key,value均为为实体类.实体属性
 	 * @return
 	 * @throws IOException
 	 */

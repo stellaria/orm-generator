@@ -1,16 +1,18 @@
 <template>
   <div id="app">
-    <Hello />
+    <Mapper />
   </div>
 </template>
 
 <script>
-import Hello from './components/Hello.vue'
+// import Hello from './components/Hello.vue'
+import Mapper from './components/MapperGenerator.vue'
 
 export default {
   name: 'App',
   components: {
-    Hello
+    // Hello,
+    Mapper
   }
 }
 </script>
