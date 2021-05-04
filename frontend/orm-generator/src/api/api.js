@@ -7,3 +7,10 @@ export function getConnection(form) {
 		data: form
 	}) 
 }
+export function sendLists(form) {
+	return request({
+		url:'/mybatis/gen/base/mapper',
+		method:'post',
+		data: form
+	})
+}

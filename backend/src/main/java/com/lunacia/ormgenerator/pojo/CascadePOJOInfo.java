@@ -1,5 +1,6 @@
 package com.lunacia.ormgenerator.pojo;
 
+import java.util.List;
 import java.util.Map;
 
 public class CascadePOJOInfo {
@@ -8,7 +9,7 @@ public class CascadePOJOInfo {
 	private String table;
 	private String packageName;
 
-	Map<String, String> field;
+	List<String> field;
 	Map<String, String> refer;
 
 	public String getEntity () {
@@ -35,11 +36,11 @@ public class CascadePOJOInfo {
 		this.packageName = packageName;
 	}
 
-	public Map<String, String> getField () {
+	public List<String> getField() {
 		return field;
 	}
 
-	public void setField (Map<String, String> field) {
+	public void setField(List<String> field) {
 		this.field = field;
 	}
 

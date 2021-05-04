@@ -10,6 +10,7 @@ const store = new Vuex.Store({
     cascadePojoList:[],
     baseMapperList:[],
     cascadeMapperList:[],
+    tableList: [],
     package:''
   },
   mutations: {
@@ -32,10 +33,21 @@ const store = new Vuex.Store({
       state.cascadePojoList.push(n)
     },
     appendBaseMapper(state, n){
-      state.baseMapperList.push(n)
+      var index = _.findIndex(state.baseMapperList, o=>{return o.table===n.table})
+      var thatIndex = _.findIndex(state.cascadeMapperList, o=>{return o.table===n.table})
+      if (thatIndex === -1) {
+        if ( index === -1) {
+          state.baseMapperList.push(n)
+        } else {
+          state.baseMapperList[index] = n
+        }
+      }
     },
     appendCascadeMapper(state, n){
       state.cascadeMapperList.push(n)
+    },
+    setTableList(state, n) {
+      state.tableList = n
     }
   }
 })

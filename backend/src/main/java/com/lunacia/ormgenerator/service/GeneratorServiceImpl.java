@@ -77,7 +77,7 @@ public class GeneratorServiceImpl implements GeneratorService {
 		output.write(sb.toString());
 		output.write("\tvoid insert("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
-				+");\n\n");
+				+"\");\n\n");
 
 		//删
 		output.write("\t@Delete(\"DELETE FROM "+tableName+" WHERE "+field.get(0).substring(0, field.get(0).indexOf(';'))+"=#{"+field.get(0).substring(0, field.get(0).indexOf(';'))+"}\")\n");
@@ -116,7 +116,7 @@ public class GeneratorServiceImpl implements GeneratorService {
 	}
 
 	@Override
-	public String cascadePOJOGenerator (String entityName, String tableName, String packageName, Map<String, String> field, Map<String, String> refer) throws IOException {
+	public String cascadePOJOGenerator (String entityName, String tableName, String packageName, List<String> field, Map<String, String> refer) throws IOException {
 		File temp = fileHelper(entityName, "pojo");
 		BufferedWriter output = new BufferedWriter(new FileWriter(temp));
 		output.write("package "+packageName+";\n\n");
@@ -131,17 +131,17 @@ public class GeneratorServiceImpl implements GeneratorService {
 		output.write("\npublic class "+firstLetterUppercase(entityName)+" {\n\n");
 
 		//生成域
-		for (Map.Entry<String, String> e:field.entrySet()) {
-			String name = e.getKey();
-			String type = e.getValue();
+		for (String e:field) {
+			String name = e.substring(0, e.indexOf(';'));
+			String type = e.substring(e.indexOf(';')+1);
 			//private Type name;
 			output.write("\tprivate "+firstLetterUppercase(type)+" "+name+";\n");
 		}
 		output.write("\n");
 		//生成getter和setter
-		for (Map.Entry<String, String> e:field.entrySet()) {
-			String type = e.getValue();
-			String name = e.getKey();
+		for (String e:field) {
+			String name = e.substring(0, e.indexOf(';'));
+			String type = e.substring(e.indexOf(';')+1);
 			//public Type getName() {return this.name;}
 			output.write("\tpublic "+firstLetterUppercase(type)+" get"+firstLetterUppercase(name)+"() {return this."+name+";}\n");
 			//public void setName(Type name) {this.name=name);
@@ -304,8 +304,6 @@ public class GeneratorServiceImpl implements GeneratorService {
 		//方法名生成规则：find+当前实体类名(s)+By+当前类被关联的表的列的名称
 		for (Map.Entry<String, String> e : findMap.entrySet()) {
 			String column = linkMap.get(e.getKey()); //反向查找当前属性对应的列名
-			System.out.println(column);
-			System.out.println(e.getKey());
 			String columnName = column.substring(0, column.indexOf(';'));
 			String columnType = column.substring(column.indexOf(';')+1);
 			output.write("\t@Select(\"SELECT * FROM "+tableName+" WHERE "+columnName+"=#{"+columnName+"}\")\n");

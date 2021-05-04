@@ -53,11 +53,19 @@ public class MybatisGeneratorController {
 	}
 
 	@PostMapping("/base/mapper")
-	public ResponseEntity generateMapper(@RequestBody List<BaseMapperInfo> infos) throws IOException {
-		for (BaseMapperInfo info : infos) {
-			generatorService.baseMapperGenerator(info.getEntity(), info.getTable(), info.getPackageName(), info.getField());
+	public ResponseEntity generateMapper(
+			@RequestBody Map<String, Object> infos
+	) throws IOException {
+		List<Map<String, Object>> list = (List<Map<String, Object>>) infos.get("infos");
+		String path = null;
+		for (Map<String, Object> map : list) {
+			String entity = (String) map.get("entity");
+			String table = (String) map.get("table");
+			String packageName = (String) map.get("packageName");
+			List<String> field = (List<String>) map.get("field");
+			path = generatorService.baseMapperGenerator(entity,table,packageName,field);
 		}
-
+		System.out.println(path);
 		return ResponseEntity.ok().build();
 	}
 

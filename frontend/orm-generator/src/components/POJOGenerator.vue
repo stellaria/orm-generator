@@ -93,41 +93,7 @@ export default {
 			dynamicValidateForm:{
 			},
 			tableName:'',
-      tableData: [
-				// {
-        //   id: '12987122',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-        // }, {
-        //   id: '12987123',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-        // }, {
-        //   id: '12987125',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-        // }, {
-        //   id: '12987126',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-				// }
-				],
+      tableData: [],
 			//暂时存放,便于页面显示
 			basePojo:[],
 			multipleSelection:[],
@@ -164,6 +130,7 @@ export default {
 				p.field = field
 				this.$store.commit('appendBasePojo', p)
 			})
+			this.$router.push('/mapper')
 		},
 		handleSelectionChange(val) {
 			this.multipleSelection = val;
@@ -247,6 +214,7 @@ export default {
 			}
 			//更新basePojo的实体名
 			this.basePojo[_.findIndex(this.basePojo, o=>{return o.table===this.dynamicValidateForm.table})].entity=this.newEntity
+			this.basePojo[_.findIndex(this.basePojo, o=>{return o.table===this.dynamicValidateForm.table})].field=this.dynamicValidateForm.field
 			//更新多选器中的实体名
 			var index = _.findIndex(this.options[0].children, o=>{return o.label===this.dynamicValidateForm.entity})
 			this.options[0].children[index].label=this.newEntity
@@ -300,6 +268,7 @@ export default {
 					data.name = o[0].TABLE_NAME
 					data.cols = o
 					this.tableData.push(data)
+					this.$store.commit('setTableList', list)
 				})
 				this.$store.commit('setPackage', 'com.lunacia.orm')
 			})

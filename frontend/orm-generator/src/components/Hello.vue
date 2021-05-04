@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>输入信息以开始</h1>
-    <el-form :label-position="left" ref="form" :model="form" label-width="100px" class="hello">
+    <el-form  ref="form" :model="form" label-width="100px" class="hello">
       <el-form-item label="项目包名">
         <el-input v-model="form.package"></el-input>
       </el-form-item>
@@ -41,7 +41,8 @@ export default {
     }
   },methods: {
     onSubmit() {
-      console.log(this.form);
+      this.$store.commit('setPackage', this.form.package)
+      this.$router.push('/pojo')
     }
   }
 }

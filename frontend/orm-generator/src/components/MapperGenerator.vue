@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container v-loading="loading">
     <el-aside width="400px">
 			<h1>{{schemaName}}</h1>
       <el-table :data="tableData" border style="width: 100%" @selection-change="handleSelectionChange">
@@ -28,7 +28,7 @@
 					width="55">
 				</el-table-column>
       </el-table>
-			<el-button type="primary" plain @click="generatePOJO()" style="margin-top:20px;">GO!</el-button>
+			<el-button type="primary" plain @click="generateMapper" style="margin-top:20px;">GO!</el-button>
 			<el-button type="primary" plain @click="goNext" style="margin-top:20px;" :disabled="beforeGo">下一步!</el-button>
     </el-aside>
 		<el-container>
@@ -63,19 +63,14 @@
 							@change="val=>{handleChange(val, index)}"></el-cascader>
 						</el-col>
 						<el-col :span="6">
-							<el-select v-model="dynamicValidateForm.type" placeholder="请选择">
-								<el-option
-									v-for="item in selectOptions"
-									:key="item.value"
-									:label="item.label"
-									:value="item.value">
-								</el-option>
-							</el-select>
+							<el-cascader
+							:options="selectOptions" 
+							:show-all-levels="false" clearable 
+							@change="val=>{handleOptionChange(val, index)}"></el-cascader>
 						</el-col>
 					</el-form-item>
 					<el-form-item>
 						<el-button type="primary" @click="submitForm('dynamicValidateForm')">提交</el-button>
-						<el-button @click="addDomain">新增域</el-button>
 						<el-button @click="cancle()">取消</el-button>
 					</el-form-item>
 				</el-form>
@@ -94,47 +89,14 @@ export default {
     return {
 			customize:false,
 			schemaName:'hello',
+			loading:false,
 			beforeGo:true,
 			newEntity:'',
-			mutex:false,
 			dynamicValidateForm:{
 			},
 			tableName:'',
-      tableData: [
-				// {
-        //   id: '12987122',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-        // }, {
-        //   id: '12987123',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-        // }, {
-        //   id: '12987125',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-        // }, {
-        //   id: '12987126',
-        //   name: '好滋好味鸡蛋仔',
-        //   category: '江浙小吃、小吃零食',
-        //   desc: '荷兰优质淡奶，奶香浓而不腻',
-        //   address: '上海市普陀区真北路',
-        //   shop: '王小虎夫妻店',
-        //   shopId: '10333'
-				// }
-				],
+			cascadeType:'',
+      tableData: [],
 			//暂时存放,便于页面显示
 			basePojo:[],
 			multipleSelection:[],
@@ -179,15 +141,26 @@ export default {
 					field.push(m.name+';'+m.type)
 				})
 				p.field = field
-				this.$store.commit('appendBasePojo', p)
+				this.$store.commit('appendBaseMapper', p)
 			})
+			this.handleSubmit()
 		},
+		handleSubmit() {
+			var list = this.$store.state.baseMapperList
+			// console.log(list)
+			api.sendLists({infos:list}).then(
+				res=>{
+					console.log(res)
+				}
+			)
+		},
+
 		handleSelectionChange(val) {
 			this.multipleSelection = val;
 		},
 
-		//创建通用pojo
-		generatePOJO() {
+		//创建通用Mapper
+		generateMapper() {
 			if (this.basePojo.length !== 0) {
 				this.beforeGo = false
 				return
@@ -255,8 +228,24 @@ export default {
 			this.dynamicValidateForm.refer.set(
 				this.newEntity+'.'+this.dynamicValidateForm.field[index].name, n[1]+'.'+n[2])
 		},
+		handleOptionChange(n, index) {
+			if (this.dynamicValidateForm.type === undefined) {
+				this.dynamicValidateForm.type = new Map()
+			}
+			if (n.length === 0) {
+				this.dynamicValidateForm.type.delete(
+					this.newEntity+'.'+this.dynamicValidateForm.field[index].name
+				)
+				if (this.dynamicValidateForm.type.size === 0) {
+					this.dynamicValidateForm.type = undefined
+				}
+				return
+			}
+			this.dynamicValidateForm.type.set(
+				this.newEntity+'.'+this.dynamicValidateForm.field[index].name, n[0])
+		},
 
-		//对通用pojo进行客制化
+		//对通用Mapper进行客制化
 		submitForm() {
 			if (this.newEntity==='') {
 				this.$message('实体名不可为空')
@@ -271,25 +260,28 @@ export default {
 			//更新实体名
 			this.dynamicValidateForm.entity=this.newEntity
 			var list = this.dynamicValidateForm.field
-			var field = []
-			list.forEach(m=>{
-				field.push(m.name+';'+m.type)
+			var field = new Map()
+			var tableIndex = _.findIndex(this.tableData, o=>{return this.tableName === o.name})
+			list.forEach((m, index)=>{
+				if (index < this.tableData.length) {
+					field.set(this.tableData[tableIndex].cols[index].COLUMN_NAME+';'+m.type, m.name+';'+m.type)
+				} else {
+					field.set('NULL', m.name+';'+m.type)
+				}
 			})
 			var data = _.cloneDeep(this.dynamicValidateForm)
 			data.field = field
-			if (this.dynamicValidateForm.refer === undefined) { //基础pojo
-				this.$store.commit('appendBasePojo', data)
-			} else { //级联pojo
-				this.$store.commit('appendCascadePojo', data)				
+			if (this.dynamicValidateForm.refer === undefined) { //基础mapper
+				this.$store.commit('appendBaseMapper', data)
+			} else { //级联mapper
+				this.$store.commit('appendCascadeMapper', data)		
 			}
 			this.customize = false
 			this.tableName = ''
-			this.mutex=false
 		},
       cancle() {
 				this.customize=false;
 				this.tableName = ''
-				this.mutex = false
       },
       removeDomain(item) {
         var index = this.dynamicValidateForm.domains.indexOf(item)

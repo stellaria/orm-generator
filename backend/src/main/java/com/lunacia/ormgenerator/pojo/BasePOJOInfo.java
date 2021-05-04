@@ -1,9 +1,10 @@
 package com.lunacia.ormgenerator.pojo;
 
 
+import java.io.Serializable;
 import java.util.List;
 
-public class BasePOJOInfo {
+public class BasePOJOInfo implements Serializable {
 
 	private String entity;
 	private String table;

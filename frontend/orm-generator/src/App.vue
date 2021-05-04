@@ -1,18 +1,18 @@
 <template>
   <div id="app">
-    <Mapper />
+    <router-view />
   </div>
 </template>
 
 <script>
-// import Hello from './components/Hello.vue'
-import Mapper from './components/MapperGenerator.vue'
+// import POJO from './components/POJOGenerator.vue'
+// import Mapper from './components/MapperGenerator.vue'
 
 export default {
   name: 'App',
   components: {
-    // Hello,
-    Mapper
+    // POJO,
+    // Mapper
   }
 }
 </script>

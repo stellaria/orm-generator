@@ -1,8 +1,10 @@
 package com.lunacia.ormgenerator.pojo;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
-public class BaseMapperInfo {
+public class BaseMapperInfo implements Serializable {
 	private String entity;
 	private String table;
 	private String packageName;
@@ -32,11 +34,11 @@ public class BaseMapperInfo {
 		this.packageName = packageName;
 	}
 
-	public List<String> getField () {
+	public List<String> getField() {
 		return field;
 	}
 
-	public void setField (List<String> field) {
+	public void setField(List<String> field) {
 		this.field = field;
 	}
 }
