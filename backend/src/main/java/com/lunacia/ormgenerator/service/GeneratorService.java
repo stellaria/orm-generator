@@ -23,7 +23,7 @@ public interface GeneratorService {
 	 * @param field
 	 * @return mapperUrl
 	 */
-	String baseMapperGenerator(String entityName, String tableName, String packageName, List<String> field) throws IOException;
+	String baseMapperGenerator(String entityName, String tableName, String packageName, Map<String, String> field) throws IOException;
 
 
 	/**
@@ -31,7 +31,7 @@ public interface GeneratorService {
 	 * @param entityName
 	 * @param tableName
 	 * @param packageName
-	 * @param field 为实体类属性名和属性类型，用;分割
+	 * @param field key为数据库列名和类型,用;分隔 ，value为实体类属性名和属性类型，用;分割
 	 * @param refer 关联属性 key,value均为为实体类.实体属性
 	 * @return
 	 * @throws IOException

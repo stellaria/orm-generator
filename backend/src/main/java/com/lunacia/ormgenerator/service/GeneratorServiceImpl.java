@@ -18,12 +18,12 @@ public class GeneratorServiceImpl implements GeneratorService {
 		Resource resource = new ClassPathResource("/templates/template.java");
 		File f = resource.getFile();
 		BufferedReader br = new BufferedReader(new FileReader(f));
-		File temp = fileHelper(entityName, "pojo");
+		File temp = fileHelper(packageName, entityName, "pojo");
 		BufferedWriter output = new BufferedWriter(new FileWriter(temp));
 
 		String className = br.readLine();
 		String head = className.replace("#{Template}", firstLetterUppercase(entityName));
-		output.write("package "+packageName+";\n\n");
+		output.write("package "+packageName+".pojo;\n\n");
 		output.write(head+"\n\n");
 
 		//添加域
@@ -50,63 +50,74 @@ public class GeneratorServiceImpl implements GeneratorService {
 	}
 
 	@Override
-	public String baseMapperGenerator(String entityName, String tableName, String packageName, List<String> field) throws IOException {
-		File temp = fileHelper(entityName, "mapper");
+	public String baseMapperGenerator(String entityName, String tableName, String packageName, Map<String, String> field) throws IOException {
+		File temp = fileHelper(packageName, entityName, "mapper");
 		BufferedWriter output = new BufferedWriter(new FileWriter(temp));
-		output.write("package "+packageName+";\n\n");
+		output.write("package "+packageName+".mapper;\n\n");
+		output.write("import org.apache.ibatis.annotations.*;\n\n");
+		output.write("import java.util.*;\n\n");
+		output.write("import "+packageName+".pojo."+firstLetterUppercase(entityName)+";\n\n");
 		output.write("@Mapper\n");
-		output.write("public interface UserMapper {\n\n");
+		output.write("public interface "+firstLetterUppercase(entityName)+"Mapper {\n\n");
 		//增
-		StringBuilder sb = new StringBuilder();
-		sb.append("\t@Insert(\"INSERT INTO "+tableName+"(");
-		for (int i = 0; i < field.size(); i++) {
-			String s = field.get(i).substring(0, field.get(i).indexOf(';'));
-			if (s.contains("id")) continue;
-			sb.append(s);
-			if (i < field.size()-1) sb.append(", ");
+		String tableId = null;
+		StringBuilder sbf = new StringBuilder();
+		StringBuilder sbb = new StringBuilder();
+		sbf.append("\t@Insert(\"INSERT INTO "+tableName+"(");
+		sbb.append(") VALUES(");
+		for (Map.Entry<String, String> e : field.entrySet()) {
+			String column = e.getKey().substring(0, e.getKey().indexOf(';'));
+			String property = e.getValue().substring(0, e.getValue().indexOf(';'));
+			if (property.equals("id")) {
+				tableId = column;
+				continue;
+			}
+			sbf.append(column+", ");
+			sbb.append("#{"+property+"}, ");
 		}
-		sb.append(") VALUES(");
-		for (int i = 0; i < field.size(); i++) {
-			String s = field.get(i).substring(0, field.get(i).indexOf(';'));
-			if (s.equals("t_id")) continue;
-			sb.append("#{"+s+"}");
-			if (i < field.size()-1) sb.append(", ");
-		}
-		sb.append(")\")\n");
-		sb.append("\t@Options(useGeneratedKeys = true, keyProperty = \""+field.get(0).substring(0, field.get(0).indexOf(';'))+"\")\n");
-		output.write(sb.toString());
+		if (sbf.toString().lastIndexOf(',') != -1)
+			sbf.deleteCharAt(sbf.toString().lastIndexOf(','));
+		if (sbb.toString().lastIndexOf(',') != -1)
+			sbb.deleteCharAt(sbb.toString().lastIndexOf(','));
+		sbb.append(")\")\n");
+		output.write(sbf.toString()+sbb.toString());
+		output.write("\t@Options(useGeneratedKeys = true, keyProperty = \"id\")\n");
 		output.write("\tvoid insert("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
-				+"\");\n\n");
+				+");\n\n");
 
 		//删
-		output.write("\t@Delete(\"DELETE FROM "+tableName+" WHERE "+field.get(0).substring(0, field.get(0).indexOf(';'))+"=#{"+field.get(0).substring(0, field.get(0).indexOf(';'))+"}\")\n");
+		output.write("\t@Delete(\"DELETE FROM "+tableName+" WHERE "+tableId+"=#{id}\")\n");
 		output.write("\tvoid delete("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
 				+");\n\n");
 		//改
 		StringBuilder sb1 = new StringBuilder();
 		sb1.append("\t@Update(\"UPDATE "+tableName+" SET ");
-		for (int i = 0; i < field.size(); i++) {
-			String s = field.get(i).substring(0, field.get(i).indexOf(';'));
-			if (s.equals("t_id")) continue;
-			sb1.append(s+"=#{"+s+"}");
-			if (i < field.size() - 1) sb1.append(", ");
+		for (Map.Entry<String, String> e : field.entrySet()) {
+			String column = e.getKey().substring(0, e.getKey().indexOf(';'));
+			String property = e.getValue().substring(0, e.getValue().indexOf(';'));
+			if (property.equals("id")) {
+				continue;
+			}
+			sb1.append(column+"=#{"+property+"}, ");
 		}
 		sb1.append(" WHERE t_id=#{t_id})\")\n");
+		if (sb1.toString().lastIndexOf(',') != -1)
+			sb1.deleteCharAt(sb1.toString().lastIndexOf(','));
 		output.write(sb1.toString());
 		output.write("\tvoid update("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
 				+");\n\n");
 
 		//查
-		output.write("\t@Select(\"SELECT * FROM "+tableName+" WHERE "+field.get(0).substring(0, field.get(0).indexOf(';'))+"=#{"+field.get(0).substring(0, field.get(0).indexOf(';'))+"}\")\n");
+		output.write("\t@Select(\"SELECT * FROM "+tableName+" WHERE "+tableId+"=#{id}\")\n");
 		output.write("\t"+firstLetterUppercase(entityName)+
 				" find"+firstLetterUppercase(entityName)+"ById"+"("+firstLetterUppercase(entityName)
 				+" "+firstLetterLowercase(entityName)
-				+");\n");
+				+");\n\n");
 
-		output.write("\t@Select(\"SELECT * FROM "+tableName+")\n");
+		output.write("\t@Select(\"SELECT * FROM "+tableName+"\")\n");
 		output.write("\tList<"+firstLetterUppercase(entityName)+"> find"+firstLetterUppercase(entityName)+"s();\n");
 		output.write("}");
 
@@ -117,13 +128,13 @@ public class GeneratorServiceImpl implements GeneratorService {
 
 	@Override
 	public String cascadePOJOGenerator (String entityName, String tableName, String packageName, List<String> field, Map<String, String> refer) throws IOException {
-		File temp = fileHelper(entityName, "pojo");
+		File temp = fileHelper(packageName, entityName, "pojo");
 		BufferedWriter output = new BufferedWriter(new FileWriter(temp));
-		output.write("package "+packageName+";\n\n");
+		output.write("package "+packageName+".pojo"+";\n\n");
 		//导入部分
 		for (Map.Entry<String, String> e: refer.entrySet()) {
 			String otherEntity = e.getValue().substring(0, e.getValue().indexOf('.'));
-			output.write("import "+packageName+"."+firstLetterUppercase(otherEntity)+";\n");
+			output.write("import "+packageName+".pojo."+firstLetterUppercase(otherEntity)+";\n");
 
 		}
 		output.write("import java.util.*;\n");
@@ -169,15 +180,22 @@ public class GeneratorServiceImpl implements GeneratorService {
 	@Override
 	public String cascadeMapperGenerator (String entityName, String tableName, String packageName, Map<String, String> field,
 	                                      Map<String, String> refer, Map<String, String> type) throws IOException {
-		File temp = fileHelper(entityName, "mapper");
+		File temp = fileHelper(packageName, entityName, "mapper");
 		BufferedWriter output = new BufferedWriter(new FileWriter(temp));
 
 		//文件头
-		output.write("package "+packageName +";\n\n");
+		output.write("package "+packageName+".mapper"+";\n\n");
 		//import部分
-		output.write("import "+packageName.replace(".mapper", ".pojo.")+firstLetterUppercase(entityName)+";\n");
-		output.write("import org.apache.ibatis.annotations.*;\n\n");
+		output.write("import "+packageName+".pojo."+firstLetterUppercase(entityName)+";\n");
+		for (Map.Entry<String, String> e: refer.entrySet()) {
+			String otherEntity = e.getValue().substring(0, e.getValue().indexOf('.'));
+			output.write("import "+packageName+".pojo."+firstLetterUppercase(otherEntity)+";\n");
+
+		}
+		output.write("\nimport org.apache.ibatis.annotations.*;\n\n");
 		output.write("import java.util.*;\n\n");
+		//关联部分
+
 
 		//类名
 		output.write("@Mapper\npublic interface "+firstLetterUppercase(entityName)+"Mapper {\n\n");
@@ -225,8 +243,10 @@ public class GeneratorServiceImpl implements GeneratorService {
 //
 //			if (count < size - 1) {sbf.append(", ");sbb.append(", ");}
 //		}
-		sbf.deleteCharAt(sbf.toString().lastIndexOf(','));
-		sbb.deleteCharAt(sbb.toString().lastIndexOf(','));
+		if (sbf.toString().lastIndexOf(',') != -1)
+			sbf.deleteCharAt(sbf.toString().lastIndexOf(','));
+		if (sbb.toString().lastIndexOf(',') != -1)
+			sbb.deleteCharAt(sbb.toString().lastIndexOf(','));
 		sbf.append(") ");
 		sbb.append(")\")");
 		output.write(sbf.toString()+sbb.toString()+"\n");
@@ -269,7 +289,8 @@ public class GeneratorServiceImpl implements GeneratorService {
 //					sbf.append(", ");
 //			}
 //		}
-		sbf.deleteCharAt(sbf.toString().lastIndexOf(','));
+		if (sbf.toString().lastIndexOf(',') != -1)
+			sbf.deleteCharAt(sbf.toString().lastIndexOf(','));
 		output.write(sbf.toString()+"\")\n");
 		output.write("\tvoid update("+firstLetterUppercase(entityName)+" "+firstLetterLowercase(entityName)+");\n\n");
 
@@ -283,7 +304,6 @@ public class GeneratorServiceImpl implements GeneratorService {
 			String rightEntity = e.getValue().substring(0, e.getValue().indexOf('.')); //关联实体名
 			String rightProperty = e.getValue().substring(e.getValue().indexOf('.')+1); //关联属性名
 			String column = linkMap.get(leftProperty)==null? tableId : linkMap.get(leftProperty).substring(0, linkMap.get(leftProperty).indexOf(';')); //当前实体属性对应的表列名，当找不到对应列时，即为一对多级联，该实体对应一的部分，此时property为关联属性名，column为主键（关联）
-			System.out.println(column);
 			if (type.get(e.getKey()).equals("1:n")) { //一对多，找list
 				cascadeHandler(output, leftProperty, column, packageName,
 						firstLetterUppercase(rightEntity)+"Mapper",
@@ -338,17 +358,17 @@ public class GeneratorServiceImpl implements GeneratorService {
 	                           String packageName, String thatMapper, String method, String type, String tableId) throws IOException {
 		output.write("\t\t@Result(property = \""+property+"\", column = \""+column+"\", "
 				+type+" = @"+type.substring(0,1).toUpperCase()+type.substring(1)
-				+"(select = \""+packageName+"."+thatMapper+"."+method+"\")),\n");
+				+"(select = \""+packageName+".mapper."+thatMapper+"."+method+"\")),\n");
 		if (column.equals(tableId)) {
 			output.write("\t\t@Result(property = \"id\", column = \""+tableId+"\"),\n");
 		}
 	}
 
 
-	private File fileHelper(String entityName, String type) throws IOException {
+	private File fileHelper(String packageName, String entityName, String type) throws IOException {
 		String path = ResourceUtils.getURL("classpath:").getPath();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-		File dir = new File(path + sdf.format(System.currentTimeMillis())+"/"+type);
+		File dir = new File(path + sdf.format(System.currentTimeMillis())+"/"+packageName+"/"+type);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}

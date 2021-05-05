@@ -1,13 +1,13 @@
 <template>
   <el-container>
     <el-aside width="400px">
-			<h1>{{schemaName}}</h1>
-      <el-table :data="tableData" border style="width: 100%" @selection-change="handleSelectionChange">
+			<h1>{{this.$store.state.schema}}</h1>
+      <el-table :data="this.$store.getters.tableList" border style="width: 100%" @selection-change="handleSelectionChange">
         <el-table-column type="expand">
           <template slot-scope="props">
             <el-form label-position="left" inline class="demo-table-expand">
               <el-form-item v-for="(col,index) in props.row.cols"
-							:key="index" :label="col.COLUMN_TYPE">
+							:key="index" :label="col.DATA_TYPE">
                 <span>{{ col.COLUMN_NAME }}</span>
 								<span v-show="col.COLUMN_KEY==='PRI'" style="margin-left:30px;">{{ col.COLUMN_KEY }}</span>
               </el-form-item>
@@ -79,7 +79,6 @@
 </template>
 
 <script>
-import * as api from '@/api/api.js'
 import _ from 'lodash'
 
 export default {
@@ -93,7 +92,6 @@ export default {
 			dynamicValidateForm:{
 			},
 			tableName:'',
-      tableData: [],
 			//暂时存放,便于页面显示
 			basePojo:[],
 			multipleSelection:[],
@@ -120,16 +118,19 @@ export default {
 			})
 		},
 		goNext() {
-			this.basePojo.forEach(p=>{
-				// console.log(p)
-				var list = p.field
-				var field = []
-				list.forEach(m=>{
-					field.push(m.name+';'+m.type)
-				})
-				p.field = field
+			for (var i = 0; i < this.basePojo.length; i++) {
+				var p = _.cloneDeep(this.basePojo[i])
+				var list = p.field;
+        var f = [];
+        list.forEach((m) => {
+          f.push(m.name + ";" + m.type);
+        })
+        p.field = f
 				this.$store.commit('appendBasePojo', p)
-			})
+			}
+			
+			this.$store.commit('setBasePojo', this.basePojo)
+			this.$store.commit('setOptions', this.options)
 			this.$router.push('/mapper')
 		},
 		handleSelectionChange(val) {
@@ -254,24 +255,20 @@ export default {
           type: '',
         });
       }
-	},created(){
-			api.getConnection({
-				conn_url:'jdbc:mysql://localhost:3306/neet_word?serverTimezone=UTC',
-				conn_username:'root',
-				conn_passwd:'admin',
-				conn_type:'mysql8'
-			}).then(res => {
-				var list = res.data.list
-				this.schemaName='neet_word'
-				list.forEach((o)=>{ //每一张表
-					var data = {}
-					data.name = o[0].TABLE_NAME
-					data.cols = o
-					this.tableData.push(data)
-					this.$store.commit('setTableList', list)
-				})
-				this.$store.commit('setPackage', 'com.lunacia.orm')
-			})
+	},mounted(){
+		console.log('create')
+		// // var list = this.$store.state.tableList;
+		// // console.log(this.$store.state.tableList)
+		// this.schemaName = this.$store.getters.schema;
+		// this.tableData = 
+		// console.log(this.$store.getters.tableList)
+		// list.forEach((o) => {
+		// 	//每一张表
+		// 	var data = {};
+		// 	data.name = o[0].TABLE_NAME;
+		// 	data.cols = o;
+		// 	this.tableData.push(data);
+		// });
 	}
 };
 </script>

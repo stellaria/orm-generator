@@ -11,7 +11,10 @@ const store = new Vuex.Store({
     baseMapperList:[],
     cascadeMapperList:[],
     tableList: [],
-    package:''
+    package:'',
+    schema:'aaa',
+    basePojo:[],
+    options:[],
   },
   mutations: {
     setPackage(state, n){
@@ -48,6 +51,35 @@ const store = new Vuex.Store({
     },
     setTableList(state, n) {
       state.tableList = n
+    },
+    setSchema(state, n) {
+      state.schema = n
+    },
+    setBasePojo(state, n) {
+      state.basePojo=n
+    },
+    setOptions(state, n) {
+      state.options = n
+    }
+  },
+  getters: {
+    tableList: state => {
+      var list = []
+      state.tableList.forEach((o) => {
+        //每一张表
+        var data = {};
+        data.name = o[0].TABLE_NAME;
+        data.cols = o;
+        list.push(data);
+      });
+      return list
+    },
+    schema: state=>{
+      return state.schema
+    },
+    basePojo: state=>{
+      
+      return state.basePojo
     }
   }
 })

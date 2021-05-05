@@ -9,7 +9,7 @@ export function getConnection(form) {
 }
 export function sendLists(form) {
 	return request({
-		url:'/mybatis/gen/base/mapper',
+		url:'/mybatis/gen/gen',
 		method:'post',
 		data: form
 	})

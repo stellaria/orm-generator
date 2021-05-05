@@ -28,6 +28,8 @@
 </template>
 
 <script>
+import * as api from '@/api/api.js'
+
 export default {
   data() {
     return {
@@ -42,6 +44,10 @@ export default {
   },methods: {
     onSubmit() {
       this.$store.commit('setPackage', this.form.package)
+      api.getConnection(this.form).then(res => {
+        this.$store.commit('setTableList', res.data.list)
+        this.$store.commit('setSchema', res.data.tableName)
+      })
       this.$router.push('/pojo')
     }
   }

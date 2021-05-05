@@ -1,24 +1,25 @@
 import VueRouter from 'vue-router'
 import Vue from 'vue'
+import Home from './components/Hello.vue'
+import Mapper from  './components/MapperGenerator.vue'
+import Pojo from './components/POJOGenerator.vue'
+
 Vue.use(VueRouter)
 
-// const home = ()=>{import('./components/Hello.vue')}
-const mapper = ()=>import('./components/MapperGenerator.vue')
-const pojo = ()=>import('./components/POJOGenerator.vue')
 
 const routes = [
 	{
 		path:'/',
 		name:'home',
-		component: ()=> import('./components/Hello.vue')
+		component: Home
 	},
 	{
 		path:'/pojo',
-		component:pojo
+		component:Pojo
 	},
 	{
 		path:'/mapper',
-		component:mapper
+		component:Mapper
 	}
 ]
 
