@@ -11,10 +11,11 @@ const store = new Vuex.Store({
     baseMapperList:[],
     cascadeMapperList:[],
     tableList: [],
-    package:'',
+    package:'com.lunacia.orm',
     schema:'aaa',
     basePojo:[],
     options:[],
+    orm:''
   },
   mutations: {
     setPackage(state, n){
@@ -30,10 +31,32 @@ const store = new Vuex.Store({
         } else {
           state.basePojoList[index] = n
         }
+      } else {
+        state.cascadePojoList.splice(thatIndex)
+        if ( index === -1) {
+          state.basePojoList.push(n)
+        } else {
+          state.basePojoList[index] = n
+        }
       }
     },
     appendCascadePojo(state, n){
-      state.cascadePojoList.push(n)
+      var index = _.findIndex(state.cascadePojoList, o=>{return o.table===n.table})
+      var thatIndex = _.findIndex(state.basePojoList, o=>{return o.table===n.table})
+      if (thatIndex === -1) {
+        if ( index === -1) {
+          state.cascadePojoList.push(n)
+        } else {
+          state.cascadePojoList[index] = n
+        }
+      } else {
+        state.basePojoList.splice(thatIndex)
+        if ( index === -1) {
+          state.cascadePojoList.push(n)
+        } else {
+          state.cascadePojoList[index] = n
+        }
+      }
     },
     appendBaseMapper(state, n){
       var index = _.findIndex(state.baseMapperList, o=>{return o.table===n.table})
@@ -44,10 +67,32 @@ const store = new Vuex.Store({
         } else {
           state.baseMapperList[index] = n
         }
+      } else {
+        state.cascadeMapperList.splice(thatIndex)
+        if ( index === -1) {
+          state.baseMapperList.push(n)
+        } else {
+          state.baseMapperList[index] = n
+        }
       }
     },
     appendCascadeMapper(state, n){
-      state.cascadeMapperList.push(n)
+      var index = _.findIndex(state.cascadeMapperList, o=>{return o.table===n.table})
+      var thatIndex = _.findIndex(state.baseMapperList, o=>{return o.table===n.table})
+      if (thatIndex === -1) {
+        if ( index === -1) {
+          state.cascadeMapperList.push(n)
+        } else {
+          state.cascadeMapperList[index] = n
+        }
+      } else {
+        state.baseMapperList[thatIndex].splice(thatIndex)
+        if ( index === -1) {
+          state.cascadeMapperList.push(n)
+        } else {
+          state.cascadeMapperList[index] = n
+        }
+      }
     },
     setTableList(state, n) {
       state.tableList = n
@@ -60,6 +105,9 @@ const store = new Vuex.Store({
     },
     setOptions(state, n) {
       state.options = n
+    },
+    setORM(state, n) {
+      state.orm = n
     }
   },
   getters: {

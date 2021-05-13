@@ -1,6 +1,7 @@
 package com.lunacia.ormgenerator;
 
 import com.lunacia.ormgenerator.service.GeneratorService;
+import com.lunacia.ormgenerator.service.JPAGeneratorService;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ class OrmGeneratorApplicationTests {
 	@Autowired
 	private GeneratorService generatorService;
 
+	@Autowired
+	private JPAGeneratorService jpaGeneratorService;
+
 	@Test
 	void nto1Test() throws IOException {
 		String entity="ProductInfo";
@@ -34,7 +38,10 @@ class OrmGeneratorApplicationTests {
 		Map<String, String> type = new LinkedHashMap<>();
 		type.put("ProductInfo.type", "n:1");
 
-		generatorService.cascadeMapperGenerator(entity,table,packageName,field,refer,type);
+//		generatorService.cascadeMapperGenerator(entity,table,packageName,field,refer,type);
+
+		jpaGeneratorService.repositoryGenerator(entity,table,packageName,field);
+		jpaGeneratorService.entityGenerator(entity,table,packageName,field,refer,type);
 
 	}
 
@@ -53,6 +60,9 @@ class OrmGeneratorApplicationTests {
 		type.put("Type.pis", "1:n");
 
 
-		generatorService.cascadeMapperGenerator(entity,table,packageName,field,refer,type);
+//		generatorService.cascadeMapperGenerator(entity,table,packageName,field,refer,type);
+
+		jpaGeneratorService.entityGenerator(entity,table,packageName,field,refer,type);
+		jpaGeneratorService.repositoryGenerator(entity,table,packageName,field);
 	}
 }

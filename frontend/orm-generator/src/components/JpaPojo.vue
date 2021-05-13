@@ -88,14 +88,14 @@
             :key="index"
             :prop="'field.' + index"
           >
-            <el-col :span="6" style="margin-right: 10px">
+            <el-col :span="4" >
               <el-input
                 v-model="domain.type"
                 placeholder="类型"
                 :disabled="index == 0 || !mutex"
               />
             </el-col>
-            <el-col :span="10">
+            <el-col :span="6">
               <el-input
                 v-model="domain.name"
                 placeholder="名称"
@@ -113,6 +113,20 @@
                     handleChange(val, index);
                   }
                 "
+                v-model="cascadeSelect[index]"
+              ></el-cascader>
+            </el-col>
+            <el-col :span="6">
+              <el-cascader
+                :options="selectOptions"
+                :show-all-levels="false"
+                clearable
+                @change="
+                  (val) => {
+                    handleOptionChange(val, index);
+                  }
+                "
+                v-model="typeSelect[index]"
               ></el-cascader>
             </el-col>
           </el-form-item>
@@ -131,6 +145,7 @@
 
 <script>
 import _ from "lodash";
+import * as api from '@/api/api.js'
 
 export default {
   data() {
@@ -157,6 +172,22 @@ export default {
           children: [],
         },
       ],
+      cascadeSelect:[],
+      typeSelect:[],
+      selectOptions: [
+        {
+          value: "1:1",
+          label: "1:1",
+        },
+        {
+          value: "1:n",
+          label: "1:n",
+        },
+        {
+          value: "n:1",
+          label: "n:1",
+        },
+      ],
     };
   },
   methods: {
@@ -168,24 +199,73 @@ export default {
         if (p.table.match(n.name)) {
           this.dynamicValidateForm = _.cloneDeep(p);
           this.newEntity = _.cloneDeep(p.entity);
+          this.cascadeSelect = new Array(this.dynamicValidateForm.field.length)
+          this.typeSelect = new Array(this.dynamicValidateForm.field.length)
         }
       });
     },
     goNext() {
+      var tableData = this.$store.state.tableList
+      console.log(tableData)
       for (var i = 0; i < this.basePojo.length; i++) {
         var p = _.cloneDeep(this.basePojo[i]);
         var list = p.field;
-        var f = [];
-        list.forEach((m) => {
-          f.push(m.name + ";" + m.type);
+        // var f = [];
+        // list.forEach((m) => {
+        //   f.push(m.name + ";" + m.type);
+        // });
+        // p.field = f;
+        var f = new Map();
+        // list.forEach((m) => {
+        //   f.push(m.name + ";" + m.type);
+        // })
+        list.forEach((m, index) => {
+          if (index < tableData[i].length) {
+            var key = tableData[i][index].COLUMN_NAME + ';'
+            if (tableData[i][index].DATA_TYPE.match(/.*int|float|double|bigint|tinyint/i)) {
+              key = key + 'Integer'
+            } else {
+              key = key + 'String'
+            }
+            f.set(key,m.name + ";" + m.type);
+          } else {
+            f.set("NULL", m.name + ";" + m.type);
+          }
         });
-        p.field = f;
-        this.$store.commit("appendBasePojo", p);
+        p.field = f
+        if (_.findIndex(this.$store.state.cascadePojoList, o=>{return o.table === p.table}) === -1) {
+          this.$store.commit("appendBasePojo", p);
+        }
       }
 
       this.$store.commit("setBasePojo", this.basePojo);
       this.$store.commit("setOptions", this.options);
-      this.$router.push("/mapper");
+      this.handleSubmit()
+      // this.$router.push("/mapper");
+    },
+    handleSubmit() {
+      var basePojoList = this.$store.state.basePojoList;
+      // if (this.$store.state.orm==='jpa') {
+      //   
+      // }
+      basePojoList.forEach(o=>{
+        o.field=JSON.stringify(_strMapToObj(o.field))
+      })
+      var cascadePojoList = this.$store.state.cascadePojoList;
+      cascadePojoList.forEach(o=>{
+        o.refer=JSON.stringify(_strMapToObj(o.refer))
+        o.field=JSON.stringify(_strMapToObj(o.field))
+        o.type=JSON.stringify(_strMapToObj(o.type))
+      })
+      api.sendJpaLists({
+        basePojoList:JSON.stringify(basePojoList),
+        baseMapperList:JSON.stringify(basePojoList),
+        cascadePojoList:JSON.stringify(cascadePojoList),
+        cascadeMapperList:JSON.stringify(cascadePojoList)
+      }).then((res) => {
+        console.log(res);
+      });
+     
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
@@ -208,6 +288,7 @@ export default {
         option.value = data.entity;
         option.children = [];
         var list = [];
+        var idRealName = ''
         p.cols.forEach((col, i) => {
           var child = {};
           var finalStr = {};
@@ -217,11 +298,13 @@ export default {
           } else if (col.COLUMN_NAME.match(/.*id/i) && i === 0) {
             var str = col.DATA_TYPE;
             if (str.match(/bigint/i)) {
-              finalStr.name = "id";
+              finalStr.name = 'id';
               finalStr.type = "Long";
+              idRealName = col.COLUMN_NAME
             } else {
-              finalStr.name = "id";
+              finalStr.name = 'id';
               finalStr.type = "Integer";
+              idRealName = col.COLUMN_NAME
             }
           } else {
             var type = col.DATA_TYPE;
@@ -234,9 +317,14 @@ export default {
             }
           }
           child.label = finalStr.name;
-          child.value = finalStr.name;
+          if (idRealName === '') {
+            child.value = finalStr.name;
+          } else {
+            child.value = idRealName;
+          }
           option.children.push(child);
           list.push(finalStr);
+          idRealName = ''
         });
         data.field = list;
         this.options[0].children.push(option);
@@ -245,34 +333,55 @@ export default {
     },
 
     handleChange(n, index) {
-      if (this.dynamicValidateForm.refer === undefined) {
-        this.dynamicValidateForm.refer = new Map();
-      }
-      if (n.length === 0) {
-        this.dynamicValidateForm.refer.delete(
-          this.newEntity + "." + this.dynamicValidateForm.field[index].name
-        );
-        if (this.dynamicValidateForm.refer.size === 0) {
-          this.dynamicValidateForm.refer = undefined;
-        }
-        return;
-      }
-      if (this.$store.state.orm ==='mybatis') {
-        this.dynamicValidateForm.refer.set(
-          this.newEntity + "." + this.dynamicValidateForm.field[index].name,
-          n[1] + "." + n[2]
-        );
-      } else {
-        // var tableInfo = this.$store.state.tableList[_.findIndex(this.$store.state.tableList, o=>{return this.tableName===o[0].TABLE_NAME})]
-        // var thatTableName = this.basePojo[_.findIndex(this.basePojo, o=>{return o.table === n[1]})].table
-        // console.log(thatTableName)
-        // console.log(n)
-        this.dynamicValidateForm.refer.set(
-           this.newEntity + "." + this.dynamicValidateForm.field[index].name,
-            n[1] + "." + n[2]
-        )
-      }
       
+      this.cascadeSelect[index] = n
+      // if (this.dynamicValidateForm.refer === undefined) {
+      //   this.dynamicValidateForm.refer = new Map();
+      // }
+      // if (n.length === 0) {
+      //   this.dynamicValidateForm.refer.delete(
+      //     this.newEntity + "." + this.dynamicValidateForm.field[index].name
+      //   );
+      //   if (this.dynamicValidateForm.refer.size === 0) {
+      //     this.dynamicValidateForm.refer = undefined;
+      //   }
+      //   return;
+      // }
+      // if (this.$store.state.orm ==='mybatis') {
+      //   this.dynamicValidateForm.refer.set(
+      //     this.newEntity + "." + this.dynamicValidateForm.field[index].name,
+      //     n[1] + "." + n[2]
+      //   );
+      // } else {
+      //   // var tableInfo = this.$store.state.tableList[_.findIndex(this.$store.state.tableList, o=>{return this.tableName===o[0].TABLE_NAME})]
+      //   // var thatTableName = this.basePojo[_.findIndex(this.basePojo, o=>{return o.table === n[1]})].table
+      //   // console.log(thatTableName)
+      //   // console.log(n)
+      //   this.dynamicValidateForm.refer.set(
+      //      this.newEntity + "." + this.dynamicValidateForm.field[index].name,
+      //       n[1] + "." + n[2]
+      //   )
+      // }
+      
+    },
+    handleOptionChange(n, index) {
+      this.typeSelect[index] = n
+      // if (this.dynamicValidateForm.type === undefined) {
+      //   this.dynamicValidateForm.type = new Map();
+      // }
+      // if (n.length === 0) {
+      //   this.dynamicValidateForm.type.delete(
+      //     this.newEntity + "." + this.dynamicValidateForm.field[index].name
+      //   );
+      //   if (this.dynamicValidateForm.type.size === 0) {
+      //     this.dynamicValidateForm.type = undefined;
+      //   }
+      //   return;
+      // }
+      // this.dynamicValidateForm.type.set(
+      //   this.newEntity + "." + this.dynamicValidateForm.field[index].name,
+      //   n[0]
+      // );
     },
 
     //对通用pojo进行客制化
@@ -292,6 +401,24 @@ export default {
           return o.table === this.dynamicValidateForm.table;
         })
       ].field = this.dynamicValidateForm.field;
+      //更新refer和type部分
+      var isNull = _.findIndex(this.cascadeSelect, o=>{return o!==undefined})
+      if (isNull !== -1) {
+        this.dynamicValidateForm.refer = new Map()
+        this.dynamicValidateForm.type = new Map()
+        this.cascadeSelect.forEach((o,index)=>{
+          if (o!==undefined) {
+            this.dynamicValidateForm.refer.set(
+              this.newEntity + "." + this.dynamicValidateForm.field[index].name,
+              this.cascadeSelect[index][1]+'.'+this.cascadeSelect[index][2]
+            )
+            this.dynamicValidateForm.type.set(
+              this.newEntity + "." + this.dynamicValidateForm.field[index].name,
+              this.typeSelect[index][0]
+            )
+          }
+        })
+      }
       //更新多选器中的实体名
       var index = _.findIndex(this.options[0].children, (o) => {
         return o.label === this.dynamicValidateForm.entity;
@@ -300,13 +427,29 @@ export default {
       this.options[0].children[index].value = this.newEntity;
       //更新实体名
       this.dynamicValidateForm.entity = this.newEntity;
+
       var list = this.dynamicValidateForm.field;
-      var field = [];
-      list.forEach((m) => {
-        field.push(m.name + ";" + m.type);
+      var field = new Map();
+      var tableData = this.$store.state.tableList
+      var tableIndex = _.findIndex(tableData, (o) => {
+        return this.tableName === o[0].TABLE_NAME;
+      });
+      list.forEach((m, index) => {
+        if (index < tableData[tableIndex].length) {
+          var key = tableData[tableIndex][index].COLUMN_NAME + ';'
+          if (tableData[tableIndex][index].DATA_TYPE.match(/.*int|float|double|bigint|tinyint/i)) {
+            key = key + 'Integer'
+          } else {
+            key = key + 'String'
+          }
+          field.set(key,m.name + ";" + m.type);
+        } else {
+          field.set("NULL", m.name + ";" + m.type);
+        }
       });
       var data = _.cloneDeep(this.dynamicValidateForm);
-      data.field = field;
+      data.field = field
+
       if (this.dynamicValidateForm.refer === undefined) {
         //基础pojo
         this.$store.commit("appendBasePojo", data);
@@ -317,6 +460,8 @@ export default {
       this.customize = false;
       this.tableName = "";
       this.mutex = false;
+      this.cascadeSelect = []
+      this.typeSelect = []
     },
     cancle() {
       this.customize = false;
@@ -352,6 +497,15 @@ export default {
     // });
   },
 };
+
+function _strMapToObj(strMap) {
+  let obj= Object.create(null);
+  for (let[k,v] of strMap) {
+    obj[k] = v;
+  }
+  return obj;
+}
+
 </script>
 
 <style>
@@ -371,6 +525,6 @@ h3 {
   width: 800px;
 }
 .demo-dynamic-column {
-  width: 500px;
+  width: 800px;
 }
 </style>

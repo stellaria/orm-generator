@@ -14,3 +14,19 @@ export function sendLists(form) {
 		data: form
 	})
 }
+export function sendJpaLists(form) {
+	return request({
+		url:'/jpa/gen/gen',
+		method:'post',
+		data: form
+	})
+}
+
+export function downloadRequest(form) {
+	return request({
+		url: '/download',
+		method:'post',
+		data: form,
+		responseType: 'blob'
+	})
+}

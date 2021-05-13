@@ -42,17 +42,17 @@ public class DatabaseServiceImpl implements DatabaseService{
 		return l;
 	}
 
-	@Override
-	public void generatePOJO (String name, List<String> field) {
-		Resource resource = new ClassPathResource("/templates/template.java");
-		File f;
-		try {
-			f = resource.getFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
+//	@Override
+//	public void generatePOJO (String name, List<String> field) {
+//		Resource resource = new ClassPathResource("/templates/template.java");
+//		File f;
+//		try {
+//			f = resource.getFile();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//	}
 
 	private SqlSession getSession(String url, String username, String passwd, String type) throws Exception {
 		String driver = null;

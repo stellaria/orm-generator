@@ -1,18 +1,21 @@
 <template>
   <div id="app">
-    <router-view />
+    <!-- <router-view /> -->
+    <Download />
   </div>
 </template>
 
 <script>
 // import POJO from './components/POJOGenerator.vue'
 // import Mapper from './components/MapperGenerator.vue'
+import Download from './components/Download'
 
 export default {
   name: 'App',
   components: {
     // POJO,
     // Mapper
+    Download
   }
 }
 </script>

@@ -37,9 +37,9 @@ public class GeneratorServiceImpl implements GeneratorService {
 		for (int i = 0; i < field.size(); i++) {
 			String name = field.get(i).substring(0, field.get(i).indexOf(';'));
 			String type = field.get(i).substring(field.get(i).indexOf(';')+1);
-			output.write("\tpublic "+ firstLetterUppercase(type) +" get"+firstLetterUppercase(name)+"() {return this."+name+";}\n");
+			output.write("\tpublic "+ firstLetterUppercase(type) +" get"+firstLetterUppercase(name)+"() {\n\t\treturn this."+name+";\n\t}\n");
 
-			output.write("\tpublic void set"+firstLetterUppercase(name)+"("+firstLetterUppercase(type)+" "+name+") {this."+name+"="+name+";}\n");
+			output.write("\tpublic void set"+firstLetterUppercase(name)+"("+firstLetterUppercase(type)+" "+name+") {\n\t\tthis."+name+"="+name+";\n\t}\n");
 
 		}
 		output.write("\n}");
@@ -102,7 +102,7 @@ public class GeneratorServiceImpl implements GeneratorService {
 			}
 			sb1.append(column+"=#{"+property+"}, ");
 		}
-		sb1.append(" WHERE t_id=#{t_id})\")\n");
+		sb1.append(" WHERE "+tableId+"=#{id})\")\n");
 		if (sb1.toString().lastIndexOf(',') != -1)
 			sb1.deleteCharAt(sb1.toString().lastIndexOf(','));
 		output.write(sb1.toString());
@@ -289,9 +289,10 @@ public class GeneratorServiceImpl implements GeneratorService {
 //					sbf.append(", ");
 //			}
 //		}
+		sbf.append(" WHERE "+tableId+"=#{id})\")\n");
 		if (sbf.toString().lastIndexOf(',') != -1)
 			sbf.deleteCharAt(sbf.toString().lastIndexOf(','));
-		output.write(sbf.toString()+"\")\n");
+		output.write(sbf.toString());
 		output.write("\tvoid update("+firstLetterUppercase(entityName)+" "+firstLetterLowercase(entityName)+");\n\n");
 
 		//查

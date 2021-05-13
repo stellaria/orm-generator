@@ -14,5 +14,5 @@ public interface DatabaseService {
 //	List<Map> getTableInfo(String url, String username, String passwd, String type, String tableName);
 
 
-	void generatePOJO(String name, List<String> field);
+//	void generatePOJO(String name, List<String> field);
 }
