@@ -6,14 +6,16 @@
 </template>
 
 <script>
+import Download from './components/Download.vue'
 // import POJO from './components/POJOGenerator.vue'
 // import Mapper from './components/MapperGenerator.vue'
-import Download from './components/Download'
+// import Download from './components/Download'
 
 export default {
   name: 'App',
   components: {
     // POJO,
+    // Download,
     // Mapper
     Download
   }

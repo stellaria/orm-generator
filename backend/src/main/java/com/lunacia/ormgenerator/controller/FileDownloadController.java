@@ -36,6 +36,7 @@ public class FileDownloadController {
 			String path = ResourceUtils.getURL("classpath:").getPath();
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 			String filePath = ZipUtil.generateFile(path + sdf.format(System.currentTimeMillis())+"/"+packageName, "zip");
+//			String filePath = ZipUtil.generateFile(path + "2021-05-06/"+packageName, "zip");
 			File file = new File(filePath);
 
 			// 获取本地文件系统中的文件资源

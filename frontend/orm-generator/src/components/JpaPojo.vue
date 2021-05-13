@@ -60,8 +60,15 @@
     <el-container>
       <el-header>{{ tableName }}</el-header>
       <el-main>
+        <p v-if="!customize">
+					欢迎使用本系统,操作流程如下:<br>
+					首先用复选框选在左边的表格中选中你想要生成的表,之后点击go按钮<br>
+					再来,对你想要自定义的类,点击对应的客制化就能进入自定义环节<br>
+					在自定义栏中,你可以选择修改类名,实体名,实体属性,关联对象,甚至可以添加表中不存在的行<br>
+					最后点击下一步来进入下一个步骤
+				</p>
         <el-form
-          v-show="customize"
+          v-if="customize"
           :model="dynamicValidateForm"
           ref="dynamicValidateForm"
           label-width="150px"
@@ -108,6 +115,7 @@
                 :show-all-levels="false"
                 clearable
                 :disabled="index == 0 || !mutex"
+                placeholder="请选择关联属性"
                 @change="
                   (val) => {
                     handleChange(val, index);
@@ -121,6 +129,7 @@
                 :options="selectOptions"
                 :show-all-levels="false"
                 clearable
+                placeholder="请选择关联类型"
                 @change="
                   (val) => {
                     handleOptionChange(val, index);
@@ -134,7 +143,9 @@
             <el-button type="primary" @click="submitForm('dynamicValidateForm')"
               >提交</el-button
             >
-            <el-button @click="addDomain">新增域</el-button>
+            <el-tooltip class="item" effect="dark" content="对一对多一的一方生成管理多的一方的属性" placement="top">
+              <el-button @click="addDomain">新增域</el-button>
+            </el-tooltip>
             <el-button @click="cancle()">取消</el-button>
           </el-form-item>
         </el-form>
