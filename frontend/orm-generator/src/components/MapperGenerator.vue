@@ -195,7 +195,7 @@ export default {
       this.$store.state.baseMapperList = []
       this.$store.state.basePojoList = []
       this.$store.state.cascadePojoList = []
-      this.$router.push('/pojo')
+      this.$router.push('/mybatis/pojo')
     },
     goNext() {
       for (var i = 0; i < this.basePojo.length; i++) {
@@ -255,18 +255,10 @@ export default {
           cascadePojoList:JSON.stringify(cascadePojoList),
           cascadeMapperList:JSON.stringify(cascadeMapperList)
         }).then((res) => {
-          console.log(res);
+          if(res.code === 200)
+          this.$router.push('/download')
         });
-      } else {
-        api.sendJpaLists({
-          basePojoList:basePojoList,
-          baseMapperList:JSON.stringify(baseMapperList),
-          cascadePojoList:JSON.stringify(cascadePojoList),
-          cascadeMapperList:JSON.stringify(cascadeMapperList)
-        }).then((res) => {
-          console.log(res);
-        });
-      }
+      } 
      
     },
 

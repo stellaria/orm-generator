@@ -1,5 +1,7 @@
 package com.lunacia.ormgenerator.service;
 
+import com.lunacia.ormgenerator.exception.UnknownDatabaseException;
+import com.lunacia.ormgenerator.exception.UsernameOrPasswordErrorException;
 import com.lunacia.ormgenerator.mapper.DatabaseMapper;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.session.SqlSession;
@@ -20,13 +22,10 @@ import java.util.Map;
 public class DatabaseServiceImpl implements DatabaseService{
 
 	@Override
-	public List<List<Map>> getSchemaInfo (String url, String username, String passwd, String type) {
+	public List<List<Map>> getSchemaInfo (String url, String username, String passwd, String type) throws Exception {
 		SqlSession session = null;
-		try {
-			 session = getSession(url, username, passwd, type);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		session = getSession(url, username, passwd, type);
+
 
 		DatabaseMapper databaseMapper = session.getMapper(DatabaseMapper.class);
 

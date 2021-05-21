@@ -9,7 +9,7 @@ import java.util.Map;
 public interface DatabaseService {
 
 
-	List<List<Map>> getSchemaInfo(String url, String username, String passwd, String type);
+	List<List<Map>> getSchemaInfo(String url, String username, String passwd, String type) throws Exception;
 
 //	List<Map> getTableInfo(String url, String username, String passwd, String type, String tableName);
 

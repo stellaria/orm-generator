@@ -88,16 +88,23 @@ export default {
       this.form.conn_url=finalStr
 
       this.$store.commit('setPackage', this.form.package)
-      api.getConnection(this.form).then(res => {
-        this.$store.commit('setTableList', res.data.list)
-        this.$store.commit('setSchema', res.data.tableName)
-      })
       this.$store.commit('setORM', this.orm)
-      if (this.orm === 'mybatis') {
-        this.$router.push('/mybatis/pojo')
-      } else {
-        this.$router.push('/jpa/pojo')
-      }
+      api.getConnection(this.form).then(res => {
+        if (res.code === 200) {
+          if (res.data.code === 500) {
+            this.$message.error(res.data.msg)
+            return 
+          }
+          this.$store.commit('setTableList', res.data.list)
+          this.$store.commit('setSchema', res.data.tableName)
+          if (this.orm === 'mybatis') {
+            this.$router.push('/mybatis/pojo')
+          } else {
+            this.$router.push('/jpa/pojo')
+          }
+        } 
+      })
+      
     }
   }
 }

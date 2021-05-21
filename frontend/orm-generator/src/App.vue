@@ -15,9 +15,9 @@ export default {
   name: 'App',
   components: {
     // POJO,
-    // Download,
+    Download,
     // Mapper
-    Download
+    // Download
   }
 }
 </script>

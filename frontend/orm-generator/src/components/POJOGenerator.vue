@@ -79,13 +79,15 @@
               <el-input v-model="newEntity" :disabled="mutex"></el-input>
             </el-col>
             <el-col :span="6">
-              <el-button
-                type="primary"
-                plain
-                @click="mutex = !mutex"
-                :disabled="mutex"
-                >done!</el-button
-              >
+              <el-tooltip class="item" effect="dark" content="先确认实体名，后修改属性" placement="top">
+                <el-button
+                  type="primary"
+                  plain
+                  @click="mutex = !mutex"
+                  :disabled="mutex"
+                  >done!</el-button
+                >
+              </el-tooltip>
             </el-col>
           </el-form-item>
           <el-form-item
@@ -190,7 +192,7 @@ export default {
 
       this.$store.commit("setBasePojo", this.basePojo);
       this.$store.commit("setOptions", this.options);
-      this.$router.push("/mapper");
+      this.$router.push("/mybatis/mapper");
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;

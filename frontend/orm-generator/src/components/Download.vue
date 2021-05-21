@@ -15,7 +15,6 @@ export default {
       api
         .downloadRequest({ package: this.$store.state.package })
         .then((res) => {
-					console.log('aaaaaaaa,aaaaaaaa')
           this.downloadRes(res, this.$store.state.package+'.zip')
         });
     },

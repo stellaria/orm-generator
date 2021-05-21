@@ -2,6 +2,8 @@ package com.lunacia.ormgenerator.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lunacia.ormgenerator.exception.UnknownDatabaseException;
+import com.lunacia.ormgenerator.exception.UsernameOrPasswordErrorException;
 import com.lunacia.ormgenerator.pojo.BaseMapperInfo;
 import com.lunacia.ormgenerator.pojo.BasePOJOInfo;
 import com.lunacia.ormgenerator.pojo.CascadeMapperInfo;
@@ -9,6 +11,7 @@ import com.lunacia.ormgenerator.pojo.CascadePOJOInfo;
 import com.lunacia.ormgenerator.service.DatabaseService;
 import com.lunacia.ormgenerator.service.GeneratorService;
 import com.lunacia.ormgenerator.utils.JsonUtil;
+import com.lunacia.ormgenerator.utils.ResCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,13 +34,16 @@ public class MybatisGeneratorController {
 
 
 	@PostMapping("/conn")
-	public ResponseEntity databaseConn(@RequestBody Map body) {
+	public ResponseEntity databaseConn(@RequestBody Map body) throws Exception {
 		String connUrl = (String) body.get("conn_url");
 		String username = (String) body.get("conn_username");
 		String password = (String) body.get("conn_passwd");
 		String type = (String) body.get("conn_type");
 
-		List<List<Map>> list = databaseService.getSchemaInfo(connUrl,username,password,type);
+		List<List<Map>> list = null;
+		list = databaseService.getSchemaInfo(connUrl,username,password,type);
+
+
 
 		Map<String, Object> data = new HashMap<>();
 		data.put("list", list);
