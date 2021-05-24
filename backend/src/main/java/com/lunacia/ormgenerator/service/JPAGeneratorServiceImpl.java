@@ -98,18 +98,33 @@ public class JPAGeneratorServiceImpl implements JPAGeneratorService {
 				switch (cType) {
 					case "1:n": {
 						output.write("\t@OneToMany(cascade = CascadeType.ALL, fetch=FetchType.EAGER)\n");
-						output.write("\t@JoinColumn(name=\""+thatProperty+"\")\n");
+						if (thatProperty.equals("id")) {
+							output.write("\t@JoinColumn(name=\""+thatProperty+"\", insertable = false, updatable = false)\n");
+						} else {
+							output.write("\t@JoinColumn(name=\""+thatProperty+"\")\n");
+						}
 						output.write("\tprivate List<"+firstLetterUppercase(thatEntity)+"> "+property+";\n");
 						break;
 					}
 					case "n:1": {
 						output.write("\t@ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)\n");
+						if (thatProperty.equals("id")) {
+							output.write("\t@JoinColumn(name=\""+thatProperty+"\", insertable = false, updatable = false)\n");
+						} else {
+							output.write("\t@JoinColumn(name=\""+thatProperty+"\")\n");
+						}
+//						output.write("\t@JoinColumn(name=\""+column+"\")\n");
 						output.write("\tprivate "+firstLetterUppercase(thatEntity)+" "+property+";\n");
 						break;
 					}
 					case "1:1": {
 						output.write("\t@OneToOne(cascade = CascadeType.ALL, fetch=FetchType.EAGER)\n");
-						output.write("\t@JoinColumn(name=\""+thatProperty+"\")\n");
+//						if (thatProperty.equals("id")) {
+//							output.write("\t@JoinColumn(name=\""+thatProperty+"\", insertable = false, updatable = false)\n");
+//						} else {
+//							output.write("\t@JoinColumn(name=\""+thatProperty+"\")\n");
+//						}
+						output.write("\t@JoinColumn(name=\""+column+"\")\n");
 						output.write("\tprivate "+firstLetterUppercase(thatEntity)+" "+property+";\n");
 						break;
 					}
@@ -153,6 +168,8 @@ public class JPAGeneratorServiceImpl implements JPAGeneratorService {
 			}
 		}
 
+		System.out.println("public interface "+firstLetterUppercase(entityName)+"Repository extends JpaRepository<" +
+				firstLetterUppercase(entityName)+","+firstLetterUppercase(idType)+"> {\n\n}");
 		//文件头部分
 		output.write("public interface "+firstLetterUppercase(entityName)+"Repository extends JpaRepository<" +
 				firstLetterUppercase(entityName)+","+firstLetterUppercase(idType)+"> {\n\n}");
@@ -182,6 +199,8 @@ public class JPAGeneratorServiceImpl implements JPAGeneratorService {
 				break;
 			}
 		}
+
+
 		//文件头部分
 		output.write("public interface "+firstLetterUppercase(entityName)+"Repository extends JpaRepository<" +
 				firstLetterUppercase(entityName)+","+firstLetterUppercase(idType)+"> {\n\n}");
@@ -191,7 +210,7 @@ public class JPAGeneratorServiceImpl implements JPAGeneratorService {
 //			String cascadeKey = e.getKey();
 //			String cascadeType = e.getValue();
 //		}
-
+		output.close();
 		return temp.getAbsolutePath();
 	}
 

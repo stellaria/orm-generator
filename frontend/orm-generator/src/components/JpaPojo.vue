@@ -278,6 +278,7 @@ export default {
         cascadeMapperList:JSON.stringify(cascadePojoList)
       }).then((res) => {
         console.log(res);
+        this.$router.push('/download')
       });
      
     },
