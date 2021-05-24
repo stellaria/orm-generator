@@ -222,7 +222,10 @@ export default {
           }
         });
         p.field = f
-				this.$store.commit('appendBaseMapper', p)
+        var index = _.findIndex(this.$store.state.cascadePojoList, o=>{return o.table === p.table})
+        if (index === -1) {
+          this.$store.commit('appendBaseMapper', p)
+        }
 			}
       this.handleSubmit();
     },
@@ -255,7 +258,8 @@ export default {
           cascadePojoList:JSON.stringify(cascadePojoList),
           cascadeMapperList:JSON.stringify(cascadeMapperList)
         }).then((res) => {
-          if(res.code === 200)
+          // if(res.code === 200)
+          console.log(res)
           this.$router.push('/download')
         });
       } 

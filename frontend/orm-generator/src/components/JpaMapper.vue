@@ -228,14 +228,17 @@ export default {
         o.field=JSON.stringify(_strMapToObj(o.field))
       })
       var basePojoList = this.$store.state.basePojoList;
+      
       // if (this.$store.state.orm==='jpa') {
-      //   basePojoList.forEach(o=>{
-      //     o.refer=JSON.stringify(_strMapToObj(o.field))
-      //   })
+      basePojoList.forEach(o=>{
+        o.refer=JSON.stringify(_strMapToObj(o.field))
+      })
       // }
       var cascadePojoList = this.$store.state.cascadePojoList;
       cascadePojoList.forEach(o=>{
-        o.refer=JSON.stringify(_strMapToObj(o.refer))
+        o.refer = JSON.stringify(_strMapToObj(o.refer))
+        o.field = JSON.stringify(_strMapToObj(o.field))
+        o.type = JSON.stringify(_strMapToObj(o.type))
       })
       var cascadeMapperList = this.$store.state.cascadeMapperList;
       cascadeMapperList.forEach(o=>{
@@ -255,12 +258,13 @@ export default {
         });
       } else {
         api.sendJpaLists({
-          basePojoList:basePojoList,
+          basePojoList:JSON.stringify(basePojoList),
           baseMapperList:JSON.stringify(baseMapperList),
           cascadePojoList:JSON.stringify(cascadePojoList),
           cascadeMapperList:JSON.stringify(cascadeMapperList)
         }).then((res) => {
           console.log(res);
+          this.$router.push('/download')
         });
       }
      

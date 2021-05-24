@@ -187,7 +187,11 @@ export default {
           f.push(m.name + ";" + m.type);
         });
         p.field = f;
-        this.$store.commit("appendBasePojo", p);
+        var index = _.findIndex(this.$store.state.cascadePojoList, o=>{return o.table === p.table})
+        console.log(index)
+        if (index === -1) {
+          this.$store.commit("appendBasePojo", p);
+        }
       }
 
       this.$store.commit("setBasePojo", this.basePojo);

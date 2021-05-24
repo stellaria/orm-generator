@@ -1,12 +1,12 @@
 <template>
   <div id="app">
-    <!-- <router-view /> -->
-    <Download />
+    <router-view />
+    <!-- <Download /> -->
   </div>
 </template>
 
 <script>
-import Download from './components/Download.vue'
+// import Download from './components/Download.vue'
 // import POJO from './components/POJOGenerator.vue'
 // import Mapper from './components/MapperGenerator.vue'
 // import Download from './components/Download'
@@ -15,7 +15,7 @@ export default {
   name: 'App',
   components: {
     // POJO,
-    Download,
+    // Download,
     // Mapper
     // Download
   }

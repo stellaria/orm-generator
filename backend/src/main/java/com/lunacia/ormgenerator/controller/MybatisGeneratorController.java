@@ -98,7 +98,7 @@ public class MybatisGeneratorController {
 	@PostMapping("/gen")
 	public ResponseEntity generate(@RequestBody Map map) throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<Map<String, Object>> basePojoList = (List<Map<String, Object>>) map.get("basePojoList");
+		List<Map<String, Object>> basePojoList = objectMapper.readValue((String)map.get("basePojoList"), List.class);
 		List<Map<String, Object>> baseMapperList = objectMapper.readValue((String)map.get("baseMapperList"), List.class);
 		List<Map<String, Object>> cascadePojoList = objectMapper.readValue((String)map.get("cascadePojoList"), List.class);
 		List<Map<String, Object>> cascadeMapperList = objectMapper.readValue((String)map.get("cascadeMapperList"), List.class);

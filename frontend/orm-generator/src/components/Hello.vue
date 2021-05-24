@@ -127,6 +127,8 @@ h1{
 }
 .el-select {
   width: 130px;
+  /* background-color: #fff; */
+  /* border-color: black; */
 }
 .customize {
   background-color: #f5f7fa;
